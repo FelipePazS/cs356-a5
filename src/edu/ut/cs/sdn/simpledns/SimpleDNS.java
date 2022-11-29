@@ -2,6 +2,7 @@ package edu.ut.cs.sdn.simpledns;
 
 import edu.ut.cs.sdn.simpledns.packet.DNS;
 import edu.ut.cs.sdn.simpledns.packet.DNSResourceRecord;
+import jdk.nashorn.internal.runtime.ECMAException;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -18,6 +19,9 @@ public class SimpleDNS
 	private static final int MAX_PACKET_SIZE = 1500;
 	private static final int LISTEN_PORT = 8053;
 
+	private static String rootServerIp;
+	private static String ec2;
+
 
 
 	public static void main(String[] args)
@@ -27,28 +31,23 @@ public class SimpleDNS
 		if (!ROOT_IP_ARG.equals(args[0])) System.exit(0);
 		if (!EC2_ARG.equals(args[2])) System.exit(0);
 
-		String rootServerIp = args[1];
-		String ec2 = args[3];
-		DatagramSocket socket = null;
-		try {
-			socket = new DatagramSocket(LISTEN_PORT);
-		} catch (SocketException e) {
-			System.out.println(e);
-			System.exit(0);
+		rootServerIp = args[1];
+		ec2 = args[3];
+
+		while (true) {
+			try {
+				DatagramSocket socket = new DatagramSocket(LISTEN_PORT);
+				DatagramPacket packet  = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
+				socket.receive(packet);
+				DNS dns = DNS.deserialize(packet.getData(), packet.getLength());
+				short queryType = dns.getQuestions().get(0).getType();
+				if (!validQueryType(queryType)) continue;
+
+			} catch (Exception e) {
+				System.out.println(e);
+				System.exit(0);
+			}
 		}
-		DatagramPacket packet  = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
-		try {
-			socket.receive(packet);
-		} catch (IOException e) {
-			System.out.println(e);
-			System.exit(0);
-		}
-
-		DNS dns = DNS.deserialize(packet.getData(), packet.getLength());
-		short queryType = dns.getQuestions().get(0).getType();
-		if (!validQueryType(queryType))
-
-
 
 		System.out.println("Hello, DNS!");
 	}
@@ -77,7 +76,11 @@ public class SimpleDNS
 		List<DNSResourceRecord> dnsAdditionals = dns.getAdditional();
 		List<DNSResourceRecord> dnsAuthorities = dns.getAuthorities();
 
-		
+		if (dnsAnswers.size() > 0) {
+			for (DNSResourceRecord answer : dnsAnswers) {
+
+			}
+		}
 
 
 		return res;
