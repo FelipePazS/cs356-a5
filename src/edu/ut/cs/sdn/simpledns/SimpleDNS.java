@@ -7,6 +7,7 @@ import jdk.nashorn.internal.runtime.ECMAException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.List;
 
@@ -17,7 +18,9 @@ public class SimpleDNS
 	private static final String EC2_ARG = "-e";
 
 	private static final int MAX_PACKET_SIZE = 1500;
+
 	private static final int LISTEN_PORT = 8053;
+	private static final int SEND_PORT = 53;
 
 	private static String rootServerIp;
 	private static String ec2;
@@ -43,13 +46,14 @@ public class SimpleDNS
 				short queryType = dns.getQuestions().get(0).getType();
 				if (!validQueryType(queryType)) continue;
 
+				DNS dnsResponse = recursiveDNS(dns);
+
+
 			} catch (Exception e) {
 				System.out.println(e);
 				System.exit(0);
 			}
 		}
-
-		System.out.println("Hello, DNS!");
 	}
 
 
@@ -57,29 +61,30 @@ public class SimpleDNS
 		return (DNS.TYPE_A == queryType || DNS.TYPE_AAAA == queryType || DNS.TYPE_CNAME == queryType || DNS.TYPE_NS == queryType);
 	}
 
-	private static DNS recursiveDNS() {
-		DNS dns = null;
+	private static DNS recursiveDNS(DNS dns) {
 		try {
+			InetAddress inet = InetAddress.getByName(rootServerIp);
 			DatagramSocket socket = new DatagramSocket();
-			DatagramPacket sendPacket = new DatagramPacket();
-
+			DatagramPacket sendPacket = new DatagramPacket(dns.serialize(), dns.getLength(), inet, SEND_PORT);
 			DatagramPacket receivePacket = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
+
+			socket.send(sendPacket);
 			socket.receive(receivePacket);
-			dns = DNS.deserialize(receivePacket.getData(), receivePacket.getLength());
 
-		} catch (SocketException e) {
+			DNS recDNS = DNS.deserialize(receivePacket.getData(), receivePacket.getLength());
 
-		} catch (IOException e) {
-
-		}
-		List<DNSResourceRecord> dnsAnswers = dns.getAnswers();
-		List<DNSResourceRecord> dnsAdditionals = dns.getAdditional();
-		List<DNSResourceRecord> dnsAuthorities = dns.getAuthorities();
-
-		if (dnsAnswers.size() > 0) {
-			for (DNSResourceRecord answer : dnsAnswers) {
+			List<DNSResourceRecord> answers = recDNS.getAnswers();
+			DNSResourceRecord rec;
+			if (answers.size() > 0) {
+				rec = answers.get(0);
+			} else {
 
 			}
+
+			
+
+		} catch (Exception e) {
+
 		}
 
 
