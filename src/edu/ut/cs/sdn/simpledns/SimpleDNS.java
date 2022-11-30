@@ -81,6 +81,7 @@ public class SimpleDNS
 				socket.close();
 
 			} catch (Exception e) {
+				System.out.println("In Main:");
 				System.out.println(e);
 				System.exit(0);
 			}
@@ -131,17 +132,18 @@ public class SimpleDNS
 
 			socket.send(sendPacket);
 			socket.receive(receivePacket);
-			socket.close();
 
 			DNS recDNS = DNS.deserialize(receivePacket.getData(), receivePacket.getLength());
 			List<DNSResourceRecord> answers = recDNS.getAnswers();
 			DNSResourceRecord res;
+			socket.close();
 			if (answers.size() > 0) {
 				res = answers.get(0);
 				return res;
 			}
 
 		} catch (Exception e) {
+			System.out.println("In non recursive DNS:");
 			System.out.println(e);
 			System.exit(0);
 		}
