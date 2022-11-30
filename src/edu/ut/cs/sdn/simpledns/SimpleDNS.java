@@ -87,6 +87,7 @@ public class SimpleDNS
 				System.out.println(dnsResponse.toString());
 				System.out.println("--Here 1");
 				DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength());
+				System.out.println("--Here 1.5");
 				socket.send(responsePacket);
 				System.out.println("--Here 2");
 				socket.close();
