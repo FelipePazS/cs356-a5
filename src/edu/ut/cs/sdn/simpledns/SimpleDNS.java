@@ -140,14 +140,16 @@ public class SimpleDNS
 
 			socket.send(sendPacket);
 			socket.receive(receivePacket);
-
 			DNS recDNS = DNS.deserialize(receivePacket.getData(), receivePacket.getLength());
+			System.out.println("Received packet from root server:");
+			System.out.println(recDNS.toString());
+
 			List<DNSResourceRecord> answers = recDNS.getAnswers();
 			DNSResourceRecord res;
 			socket.close();
 			if (answers.size() > 0) {
 				res = answers.get(0);
-				System.out.println("Got an answer:");
+				System.out.println("It contains an answer:");
 				System.out.println(res.toString());
 				return res;
 			}
@@ -157,6 +159,7 @@ public class SimpleDNS
 			System.out.println(e);
 			System.exit(0);
 		}
+		System.out.println("Got an answer:");
 		return null;
 	}
 
