@@ -35,6 +35,9 @@ public class SimpleDNS
 	The assignment spec expects you to handle the case where you receive an Authoritative resource record, but no additional records, 
 	in which case you will query the received Authoritative Name Server to first get it’s IP, and then continue your initial “recursive process” 
 	and query the initially requested domain using the IP of the received Authoritative Name Server, to finally get the required IP.
+
+	This is a very straightforward task. You can obtain the address and port of the client (dig) from its incoming request. Then, sending a response is
+	 a matter of sending an appropriately constructed DatagramPacket via the DatagramSocket through which the request was received.
 	 */
 	public static void main(String[] args)
 	{
@@ -85,7 +88,7 @@ public class SimpleDNS
 				
 				System.out.println("--Sending response packet:");
 				System.out.println(dnsResponse.toString());
-				DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength(), packet.getAddress(), SEND_PORT);
+				DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength(), packet.getAddress(), packet.getPort());
 				socket.send(responsePacket);
 				socket.close();
 			} catch (Exception e) {
