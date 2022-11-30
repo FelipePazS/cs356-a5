@@ -32,12 +32,13 @@ public class SimpleDNS
 	TODO: handle EC2, just have to match the strings I think
 	Finish recursive method
 
-	The assignment spec expects you to handle the case where you receive an Authoritative resource record, but no additional records, 
-	in which case you will query the received Authoritative Name Server to first get it’s IP, and then continue your initial “recursive process” 
-	and query the initially requested domain using the IP of the received Authoritative Name Server, to finally get the required IP.
-
 	This is a very straightforward task. You can obtain the address and port of the client (dig) from its incoming request. Then, sending a response is
 	 a matter of sending an appropriately constructed DatagramPacket via the DatagramSocket through which the request was received.
+
+	 If you don’t get an answer, you should now query in a loop the name servers present in the authority section.
+	To make the query to these name servers, take their ip address (to send dns udp packet) from the additional section, it will most likely be there.
+	If additional section doesn’t have the ip address for that, query the root name server for the ip address of the name server from authority section, and then make the query
+	If the above fails, just ignore and try the other name servers in the authority list
 	 */
 	public static void main(String[] args)
 	{
@@ -64,27 +65,28 @@ public class SimpleDNS
 				if (dns.getOpcode() != 0) continue;
 				if (!validQueryType(queryType)) continue;
 
-				List<DNSResourceRecord> answers = new ArrayList<DNSResourceRecord>();
 				DNS dnsResponse = new DNS();
 				if(dns.isRecursionDesired()){
 					System.out.println("--Is recursive.");
-					answers = recursiveDNS(dns);
+					dnsResponse = recursiveDNS(dns, rootServerIp, socket);
 				}
 				else {
 					System.out.println("--Is non recursive.");
 					dnsResponse = nonrecursiveDNS(dns, socket);
 				}
 
-				// for (DNSResourceRecord answer : answers) {
-				// 	System.out.println("--Going over answers");
-				// 	//handle EC2
-				// 	if (DNS.TYPE_A == queryType && DNS.TYPE_CNAME == answer.getType()) {
-				// 		longest match
-				// 		DNSRdataString ec2String = ec2match(answer);
-				// 		DNSResourceRecord txtRecord = new DNSResourceRecord(answer.getName(), DNS_TXT, ec2String);
-				// 		dnsResponse.addAnswer(txtRecord);
-				// 	}
-				// }
+				for (DNSResourceRecord answer : dnsResponse.getAnswers()) {
+					System.out.println("--Going over answers");
+					//handle EC2
+					if (DNS.TYPE_A == queryType && DNS.TYPE_CNAME == answer.getType()) {
+						// longest match
+						DNSRdataString ec2String = ec2match(answer);
+						if (ec2String != null){
+							DNSResourceRecord txtRecord = new DNSResourceRecord(answer.getName(), DNS_TXT, ec2String);
+							dnsResponse.addAnswer(txtRecord);
+						}
+					}
+				}
 				
 				System.out.println("--Sending response packet:");
 				System.out.println(dnsResponse.toString());
@@ -104,33 +106,77 @@ public class SimpleDNS
 		return (DNS.TYPE_A == queryType || DNS.TYPE_AAAA == queryType || DNS.TYPE_CNAME == queryType || DNS.TYPE_NS == queryType);
 	}
 
-	private static List<DNSResourceRecord> recursiveDNS(DNS dns) {
-		// try {
+	private static DNS recursiveDNS(DNS dns, String IP,  DatagramSocket socket) {
+		try {
 
-		// 	InetAddress inet = InetAddress.getByName(rootServerIp);
-		// 	DatagramSocket socket = new DatagramSocket();
-		// 	DatagramPacket sendPacket = new DatagramPacket(dns.serialize(), dns.getLength(), inet, SEND_PORT);
-		// 	DatagramPacket receivePacket = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
+			InetAddress inet = InetAddress.getByName(IP);
+			DatagramPacket sendPacket = new DatagramPacket(dns.serialize(), dns.getLength(), inet, SEND_PORT);
+			DatagramPacket receivePacket = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
 
-		// 	socket.send(sendPacket);
-		// 	socket.receive(receivePacket);
+			socket.send(sendPacket);
+			socket.receive(receivePacket);
 
-		// 	DNS recDNS = DNS.deserialize(receivePacket.getData(), receivePacket.getLength());
+			DNS recDNS = DNS.deserialize(receivePacket.getData(), receivePacket.getLength());
 
-		// 	List<DNSResourceRecord> answers = recDNS.getAnswers();
-		// 	DNSResourceRecord rec;
-		// 	if (answers.size() > 0) {
-		// 		rec = answers.get(0);
-		// 	} else {
+			List<DNSResourceRecord> answers = recDNS.getAnswers();
+			if (answers.size() > 0) {
+				// got an answer! return this packet up to be sent to client
+				return recDNS;
+			} else {
+				// didn't got an answer, loop through the Authority RR that we got.
+				for (DNSResourceRecord authority : recDNS.getAuthorities()){
+					boolean got_a_match = false;
+					String name = authority.getData().toString();
+					System.out.println("--Going over " + name);
+					for (DNSResourceRecord additional : recDNS.getAdditional()){
+						if (additional.getName().equals(name)){
+							got_a_match = true;
+							DNS responseDNS = recursiveDNS(dns, additional.getData().toString(), socket);
+							if (responseDNS.getAnswers().size() > 0){
+								return responseDNS;
+							}
+						}
+					}
+					if (!got_a_match){
+						/*	The assignment spec expects you to handle the case where you receive an Authoritative resource record, but no additional records, 
+							in which case you will query the received Authoritative Name Server to first get it’s IP, and then continue your initial “recursive process” 
+							and query the initially requested domain using the IP of the received Authoritative Name Server, to finally get the required IP. 
+						*/
+					}
+				}
+			}
 
-		// 	}
 
 
+		} catch (Exception e) {
+			System.out.println(e);
+			System.exit(0);
+		}
+		return null;
+	}
 
-		// } catch (Exception e) {
-		// 	System.out.println(e);
-		// 	System.exit(0);
-		// }
+	private static DNSRdataString ec2match(DNSResourceRecord answer){
+		DNSRdataString ans = new DNSRdataString();
+		String looking_for = answer.getData().toString();
+		String best_name = null;
+		String best_ip = null;
+		try{
+			Scanner sc = new Scanner(new File("./ec2.csv"));
+			sc.useDelimiter(",");     
+			while (sc.hasNext()){ 
+				String address = sc.next();
+				if (!sc.hasNext()){
+					continue;
+				}
+				String name = sc.next();
+				// longest match
+			}   
+			sc.close(); 
+			return ans;
+		} catch (Exception e) {
+			System.out.println(e);
+			System.exit(0);
+		}
 		return null;
 	}
 
@@ -148,16 +194,6 @@ public class SimpleDNS
 			System.out.println(recDNS.toString());
 			return recDNS;
 
-			// List<DNSResourceRecord> answers = recDNS.getAnswers();
-			// DNSResourceRecord res;
-			// socket.close();
-			// if (answers.size() > 0) {
-			// 	res = answers.get(0);
-			// 	System.out.println("--It contains an answer:");
-			// 	System.out.println(res.toString());
-			// 	return res;
-			// }
-
 		} catch (Exception e) {
 			System.out.println("--In non recursive DNS:");
 			System.out.println(e);
@@ -166,22 +202,4 @@ public class SimpleDNS
 		System.out.println("--Didn't got an answer:");
 		return null;
 	}
-
-
-	// private static DNSRdataString ec2match(DNSResourceRecord answer){
-	// 	DNSRdataString ans = new DNSRdataString();
-	// 	try{
-	// 		Scanner sc = new Scanner(new File("../ec2.csv"));
-	// 		sc.useDelimiter(",");     
-	// 		while (sc.hasNext()){  
-	// 			System.out.print(sc.next());
-	// 		}   
-	// 		sc.close(); 
-	// 		return ans;
-	// 	} catch (Exception e) {
-	// 		System.out.println(e);
-	// 		System.exit(0);
-	// 	}
-	// 	return null;
-	// }
 }
