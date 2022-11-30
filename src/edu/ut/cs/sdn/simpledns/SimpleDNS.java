@@ -48,6 +48,7 @@ public class SimpleDNS
 
 		while (true) {
 			try {
+				System.out.println("Here 1");
 				DatagramSocket socket = new DatagramSocket(LISTEN_PORT);
 				DatagramPacket packet  = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
 				socket.receive(packet);
@@ -64,7 +65,7 @@ public class SimpleDNS
 				else {
 					answers.add(nonrecursiveDNS(dns));
 				}
-
+				System.out.println("Here 2");
 				DNS dnsResponse = new DNS();
 				for (DNSResourceRecord answer : answers) {
 					//handle EC2
@@ -79,7 +80,7 @@ public class SimpleDNS
 				DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength());
 				socket.send(responsePacket);
 				socket.close();
-
+				System.out.println("Here 3");
 			} catch (Exception e) {
 				System.out.println("In Main:");
 				System.out.println(e);
