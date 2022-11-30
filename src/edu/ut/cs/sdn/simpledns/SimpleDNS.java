@@ -48,11 +48,14 @@ public class SimpleDNS
 
 		while (true) {
 			try {
-				System.out.println("Here 1");
+				System.out.println("Starting to lister for packets");
 				DatagramSocket socket = new DatagramSocket(LISTEN_PORT);
 				DatagramPacket packet  = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
 				socket.receive(packet);
 				DNS dns = DNS.deserialize(packet.getData(), packet.getLength());
+				System.out.println("Got a packet:");
+				System.out.println(dns.toString());
+
 				short queryType = dns.getQuestions().get(0).getType();
 
 				if (dns.getOpcode() != 0) continue;
@@ -60,27 +63,30 @@ public class SimpleDNS
 
 				List<DNSResourceRecord> answers = new ArrayList<DNSResourceRecord>();
 				if(dns.isRecursionDesired()){
+					System.out.println("Is recursive.");
 					answers = recursiveDNS(dns);
 				}
 				else {
+					System.out.println("Is non recursive.");
 					answers.add(nonrecursiveDNS(dns));
 				}
-				System.out.println("Here 2");
 				DNS dnsResponse = new DNS();
 				for (DNSResourceRecord answer : answers) {
+					System.out.println("Going over answers");
 					//handle EC2
 					if (DNS.TYPE_A == queryType && DNS.TYPE_CNAME == answer.getType()) {
 						// longest match
-						DNSRdataString ec2String = ec2match(answer);
-						DNSResourceRecord txtRecord = new DNSResourceRecord(answer.getName(), DNS_TXT, ec2String);
-						dnsResponse.addAnswer(txtRecord);
+						// DNSRdataString ec2String = ec2match(answer);
+						// DNSResourceRecord txtRecord = new DNSResourceRecord(answer.getName(), DNS_TXT, ec2String);
+						// dnsResponse.addAnswer(txtRecord);
 					}
 				}
 
 				DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength());
+				System.out.println("Sending response packet:");
+				System.out.println(responsePacket.toString());
 				socket.send(responsePacket);
 				socket.close();
-				System.out.println("Here 3");
 			} catch (Exception e) {
 				System.out.println("In Main:");
 				System.out.println(e);
@@ -126,6 +132,7 @@ public class SimpleDNS
 
 	private static DNSResourceRecord nonrecursiveDNS(DNS dns) {
 		try {
+			System.out.println("Asking the root server");
 			InetAddress inet = InetAddress.getByName(rootServerIp);
 			DatagramSocket socket = new DatagramSocket();
 			DatagramPacket sendPacket = new DatagramPacket(dns.serialize(), dns.getLength(), inet, SEND_PORT);
@@ -140,6 +147,8 @@ public class SimpleDNS
 			socket.close();
 			if (answers.size() > 0) {
 				res = answers.get(0);
+				System.out.println("Got an answer:");
+				System.out.println(res.toString());
 				return res;
 			}
 
