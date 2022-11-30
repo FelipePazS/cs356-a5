@@ -69,7 +69,7 @@ public class SimpleDNS
 				}
 				else {
 					System.out.println("--Is non recursive.");
-					dnsResponse = nonrecursiveDNS(dns);
+					dnsResponse = nonrecursiveDNS(dns, socket);
 				}
 
 				// for (DNSResourceRecord answer : answers) {
@@ -85,9 +85,12 @@ public class SimpleDNS
 				
 				System.out.println("--Sending response packet:");
 				System.out.println(dnsResponse.toString());
+				System.out.println("--Here 1");
 				DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength());
 				socket.send(responsePacket);
+				System.out.println("--Here 2");
 				socket.close();
+				System.out.println("--Here 3");
 			} catch (Exception e) {
 				System.out.println("--In Main:");
 				System.out.println(e);
@@ -131,11 +134,10 @@ public class SimpleDNS
 		return null;
 	}
 
-	private static DNS nonrecursiveDNS(DNS dns) {
+	private static DNS nonrecursiveDNS(DNS dns, DatagramSocket socket) {
 		try {
 			System.out.println("--Asking the root server");
 			InetAddress inet = InetAddress.getByName(rootServerIp);
-			DatagramSocket socket = new DatagramSocket();
 			DatagramPacket sendPacket = new DatagramPacket(dns.serialize(), dns.getLength(), inet, SEND_PORT);
 			DatagramPacket receivePacket = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
 
@@ -144,7 +146,6 @@ public class SimpleDNS
 			DNS recDNS = DNS.deserialize(receivePacket.getData(), receivePacket.getLength());
 			System.out.println("--Received packet from root server:");
 			System.out.println(recDNS.toString());
-			socket.close();
 			return recDNS;
 
 			// List<DNSResourceRecord> answers = recDNS.getAnswers();
