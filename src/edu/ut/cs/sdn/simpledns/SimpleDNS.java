@@ -48,7 +48,7 @@ public class SimpleDNS
 
 		while (true) {
 			try {
-				System.out.println("--Starting to lister for packets");
+				System.out.println("--Starting to listen for packets");
 				DatagramSocket socket = new DatagramSocket(LISTEN_PORT);
 				DatagramPacket packet  = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
 				socket.receive(packet);
@@ -82,10 +82,10 @@ public class SimpleDNS
 				// 		dnsResponse.addAnswer(txtRecord);
 				// 	}
 				// }
-
-				DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength());
+				
 				System.out.println("--Sending response packet:");
-				System.out.println(responsePacket.toString());
+				System.out.println(dnsResponse.toString());
+				DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength());
 				socket.send(responsePacket);
 				socket.close();
 			} catch (Exception e) {
