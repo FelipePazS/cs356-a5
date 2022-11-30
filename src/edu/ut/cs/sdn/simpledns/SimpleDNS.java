@@ -10,7 +10,10 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;  
+import java.io.*;
 
 public class SimpleDNS
 {
@@ -48,26 +51,34 @@ public class SimpleDNS
 				DatagramPacket packet  = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
 				socket.receive(packet);
 				DNS dns = DNS.deserialize(packet.getData(), packet.getLength());
-				short queryType = dns.getQuestions().get(0).getType();
+				System.out.print("Received:");
+				System.out.print(dns.toString());
+				// short queryType = dns.getQuestions().get(0).getType();
 
-				if (dns.getOpcode() != 0) continue;
-				if (!validQueryType(queryType)) continue;
+				// if (dns.getOpcode() != 0) continue;
+				// if (!validQueryType(queryType)) continue;
 
-				DNS dnsResponse = recursiveDNS(dns);
+				// List<DNSResourceRecord> answers = new ArrayList<DNSResourceRecord>();
+				// if(dns.isRecursionDesired()){
+				// 	answers = recursiveDNS(dns);
+				// }
+				// else {
+				// 	answers.add(nonrecursiveDNS(dns));
+				// }
 
-				List<DNSResourceRecord> answers = dnsResponse.getAnswers();
+				// DNS dnsResponse = new DNS();
+				// for (DNSResourceRecord answer : answers) {
+				// 	//handle EC2
+				// 	if (DNS.TYPE_A == queryType && DNS.TYPE_CNAME == answer.getType()) {
+				// 		// longest match
+				// 		DNSRdataString ec2String = ec2match(answer);
+				// 		DNSResourceRecord txtRecord = new DNSResourceRecord(answer.getName(), DNS_TXT, ec2String);
+				// 		dnsResponse.addAnswer(txtRecord);
+				// 	}
+				// }
 
-				for (DNSResourceRecord answer : answers) {
-					//handle EC2
-					if (DNS.TYPE_A == answer.getType()) {
-						DNSRdataString ec2String = new DNSRdataString();
-						DNSResourceRecord txtRecord = new DNSResourceRecord(answer.getName(), DNS_TXT, ec2String);
-						dnsResponse.addAnswer(txtRecord);
-					}
-				}
-
-				DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength());
-				socket.send(responsePacket);
+				// DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength());
+				// socket.send(responsePacket);
 
 			} catch (Exception e) {
 				System.out.println(e);
@@ -81,7 +92,7 @@ public class SimpleDNS
 		return (DNS.TYPE_A == queryType || DNS.TYPE_AAAA == queryType || DNS.TYPE_CNAME == queryType || DNS.TYPE_NS == queryType);
 	}
 
-	private static DNS recursiveDNS(DNS dns) {
+	private static List<DNSResourceRecord> recursiveDNS(DNS dns) {
 		try {
 
 			InetAddress inet = InetAddress.getByName(rootServerIp);
@@ -105,8 +116,46 @@ public class SimpleDNS
 
 
 		} catch (Exception e) {
-
+			System.out.println(e);
+			System.exit(0);
 		}
 		return null;
+	}
+
+	private static DNSResourceRecord nonrecursiveDNS(DNS dns) {
+		try {
+			InetAddress inet = InetAddress.getByName(rootServerIp);
+			DatagramSocket socket = new DatagramSocket();
+			DatagramPacket sendPacket = new DatagramPacket(dns.serialize(), dns.getLength(), inet, SEND_PORT);
+			DatagramPacket receivePacket = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
+
+			socket.send(sendPacket);
+			socket.receive(receivePacket);
+
+			DNS recDNS = DNS.deserialize(receivePacket.getData(), receivePacket.getLength());
+			List<DNSResourceRecord> answers = recDNS.getAnswers();
+			DNSResourceRecord res;
+			if (answers.size() > 0) {
+				res = answers.get(0);
+				return res;
+			}
+
+		} catch (Exception e) {
+			System.out.println(e);
+			System.exit(0);
+		}
+		return null;
+	}
+
+
+	private static DNSRdataString ec2match(DNSResourceRecord answer){
+		DNSRdataString ans = new DNSRdataString();
+		Scanner sc = new Scanner(new File("../ec2.csv"));  
+		sc.useDelimiter(",");     
+		while (sc.hasNext()){  
+			System.out.print(sc.next());
+		}   
+		sc.close(); 
+		return ans;
 	}
 }
