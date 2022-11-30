@@ -165,7 +165,7 @@ public class SimpleDNS
 	}
 
 
-	private static DNSRdataString ec2match(DNSResourceRecord answer){
+	// private static DNSRdataString ec2match(DNSResourceRecord answer){
 	// 	DNSRdataString ans = new DNSRdataString();
 	// 	try{
 	// 		Scanner sc = new Scanner(new File("../ec2.csv"));
@@ -180,5 +180,5 @@ public class SimpleDNS
 	// 		System.exit(0);
 	// 	}
 	// 	return null;
-	}
+	// }
 }
