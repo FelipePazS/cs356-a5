@@ -62,25 +62,26 @@ public class SimpleDNS
 				if (!validQueryType(queryType)) continue;
 
 				List<DNSResourceRecord> answers = new ArrayList<DNSResourceRecord>();
+				DNS dnsResponse = new DNS();
 				if(dns.isRecursionDesired()){
 					System.out.println("--Is recursive.");
 					answers = recursiveDNS(dns);
 				}
 				else {
 					System.out.println("--Is non recursive.");
-					answers.add(nonrecursiveDNS(dns));
+					dnsResponse = nonrecursiveDNS(dns);
 				}
-				DNS dnsResponse = new DNS();
-				for (DNSResourceRecord answer : answers) {
-					System.out.println("--Going over answers");
-					//handle EC2
-					if (DNS.TYPE_A == queryType && DNS.TYPE_CNAME == answer.getType()) {
-						// longest match
-						// DNSRdataString ec2String = ec2match(answer);
-						// DNSResourceRecord txtRecord = new DNSResourceRecord(answer.getName(), DNS_TXT, ec2String);
-						// dnsResponse.addAnswer(txtRecord);
-					}
-				}
+
+				// for (DNSResourceRecord answer : answers) {
+				// 	System.out.println("--Going over answers");
+				// 	//handle EC2
+				// 	if (DNS.TYPE_A == queryType && DNS.TYPE_CNAME == answer.getType()) {
+				// 		longest match
+				// 		DNSRdataString ec2String = ec2match(answer);
+				// 		DNSResourceRecord txtRecord = new DNSResourceRecord(answer.getName(), DNS_TXT, ec2String);
+				// 		dnsResponse.addAnswer(txtRecord);
+				// 	}
+				// }
 
 				DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength());
 				System.out.println("--Sending response packet:");
@@ -130,7 +131,7 @@ public class SimpleDNS
 		return null;
 	}
 
-	private static DNSResourceRecord nonrecursiveDNS(DNS dns) {
+	private static DNS nonrecursiveDNS(DNS dns) {
 		try {
 			System.out.println("--Asking the root server");
 			InetAddress inet = InetAddress.getByName(rootServerIp);
@@ -143,16 +144,18 @@ public class SimpleDNS
 			DNS recDNS = DNS.deserialize(receivePacket.getData(), receivePacket.getLength());
 			System.out.println("--Received packet from root server:");
 			System.out.println(recDNS.toString());
-
-			List<DNSResourceRecord> answers = recDNS.getAnswers();
-			DNSResourceRecord res;
 			socket.close();
-			if (answers.size() > 0) {
-				res = answers.get(0);
-				System.out.println("--It contains an answer:");
-				System.out.println(res.toString());
-				return res;
-			}
+			return recDNS;
+
+			// List<DNSResourceRecord> answers = recDNS.getAnswers();
+			// DNSResourceRecord res;
+			// socket.close();
+			// if (answers.size() > 0) {
+			// 	res = answers.get(0);
+			// 	System.out.println("--It contains an answer:");
+			// 	System.out.println(res.toString());
+			// 	return res;
+			// }
 
 		} catch (Exception e) {
 			System.out.println("--In non recursive DNS:");
