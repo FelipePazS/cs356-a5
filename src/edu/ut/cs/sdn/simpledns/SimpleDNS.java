@@ -85,7 +85,7 @@ public class SimpleDNS
 				
 				System.out.println("--Sending response packet:");
 				System.out.println(dnsResponse.toString());
-				DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength());
+				DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength(), packet.getAddress(), SEND_PORT);
 				socket.send(responsePacket);
 				socket.close();
 			} catch (Exception e) {
