@@ -134,7 +134,7 @@ public class SimpleDNS
 	private static DNS nonrecursiveDNS(DNS dns, DatagramSocket socket) {
 		try {
 			System.out.println("--Asking the root server");
-			InetAddress inet = InetAddress.getByName(rootServerIp);
+			InetAddress inet = InetAddress.getByAddress(rootServerIp.getBytes());
 			DatagramPacket sendPacket = new DatagramPacket(dns.serialize(), dns.getLength(), inet, SEND_PORT);
 			DatagramPacket receivePacket = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
 
