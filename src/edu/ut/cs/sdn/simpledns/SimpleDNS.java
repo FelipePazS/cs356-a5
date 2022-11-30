@@ -49,6 +49,7 @@ public class SimpleDNS
 		while (true) {
 			try {
 				System.out.println("--Starting to listen for packets");
+				System.out.println("--The Root Server Ip is " + rootServerIp);
 				DatagramSocket socket = new DatagramSocket(LISTEN_PORT);
 				DatagramPacket packet  = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
 				socket.receive(packet);
