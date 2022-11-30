@@ -85,13 +85,9 @@ public class SimpleDNS
 				
 				System.out.println("--Sending response packet:");
 				System.out.println(dnsResponse.toString());
-				System.out.println("--Here 1");
 				DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength());
-				System.out.println("--Here 1.5");
 				socket.send(responsePacket);
-				System.out.println("--Here 2");
 				socket.close();
-				System.out.println("--Here 3");
 			} catch (Exception e) {
 				System.out.println("--In Main:");
 				System.out.println(e);
@@ -170,19 +166,19 @@ public class SimpleDNS
 
 
 	private static DNSRdataString ec2match(DNSResourceRecord answer){
-		DNSRdataString ans = new DNSRdataString();
-		try{
-			Scanner sc = new Scanner(new File("../ec2.csv"));
-			sc.useDelimiter(",");     
-			while (sc.hasNext()){  
-				System.out.print(sc.next());
-			}   
-			sc.close(); 
-			return ans;
-		} catch (Exception e) {
-			System.out.println(e);
-			System.exit(0);
-		}
-		return null;
-	}
+	// 	DNSRdataString ans = new DNSRdataString();
+	// 	try{
+	// 		Scanner sc = new Scanner(new File("../ec2.csv"));
+	// 		sc.useDelimiter(",");     
+	// 		while (sc.hasNext()){  
+	// 			System.out.print(sc.next());
+	// 		}   
+	// 		sc.close(); 
+	// 		return ans;
+	// 	} catch (Exception e) {
+	// 		System.out.println(e);
+	// 		System.exit(0);
+	// 	}
+	// 	return null;
+	// }
 }
