@@ -151,7 +151,7 @@ public class SimpleDNS
 									return responseDNS;
 								}
 								else {
-									System.out.println("--CNAME did not solved"));
+									System.out.println("--CNAME did not solved");
 								}
 							}
 							else {
