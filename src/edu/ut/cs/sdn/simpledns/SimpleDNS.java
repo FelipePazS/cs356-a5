@@ -69,7 +69,12 @@ public class SimpleDNS
 				DNS dnsResponse = new DNS();
 				if(dns.isRecursionDesired()){
 					System.out.println("--Is recursive.");
-					dnsResponse = recursiveDNS(dns, rootServerIp, socket);
+					DNS n_dns = new DNS();
+					n_dns.addQuestion(dns.getQuestions().get(0));
+					n_dns.setRecursionDesired(false);
+					n_dns.setId((short) (dns.getId() + (short) 1));
+					dnsResponse = recursiveDNS(n_dns, rootServerIp, socket);
+					dnsResponse.setId(dns.getId());
 				}
 				else {
 					System.out.println("--Is non recursive.");
@@ -123,16 +128,19 @@ public class SimpleDNS
 
 			for (DNSResourceRecord answer : answers){
 				if (answer.getName().equals(dns.getQuestions().get(0).getName())){
+					System.out.println("--Got an answer!");
 					return recDNS;
 				}
 			}
 			// didn't got an answer, loop through the Authority RR that we got.
+			System.out.println("--Didn't got an answer going over authorities");
 			for (DNSResourceRecord authority : recDNS.getAuthorities()){
 				boolean got_a_match = false;
 				String name = authority.getData().toString();
 				System.out.println("--Trying authority " + name);
 				for (DNSResourceRecord additional : recDNS.getAdditional()){
 					if (additional.getName().equals(name)){
+						System.out.println("--Found additional that has IP for this authority.");
 						got_a_match = true;
 						DNS responseDNS = recursiveDNS(dns, additional.getData().toString(), socket);
 						List<DNSResourceRecord> answers2 = responseDNS.getAnswers();
@@ -146,6 +154,8 @@ public class SimpleDNS
 								DNSQuestion CNAME_question = new DNSQuestion(answer2.getData().toString(), DNS.TYPE_CNAME);
 								DNS CNAME_query = new DNS();
 								CNAME_query.addQuestion(CNAME_question);
+								CNAME_query.setRecursionDesired(false);
+								CNAME_query.setId((short) (dns.getId() + 1));
 								DNS CNAME_response = recursiveDNS(CNAME_query, rootServerIp, socket);
 								if (CNAME_response == null){
 									System.out.println("--CNAME did not solved");
