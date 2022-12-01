@@ -1,6 +1,7 @@
 package edu.ut.cs.sdn.simpledns;
 
 import edu.ut.cs.sdn.simpledns.packet.DNS;
+import edu.ut.cs.sdn.simpledns.packet.DNSQuestion;
 import edu.ut.cs.sdn.simpledns.packet.DNSRdataString;
 import edu.ut.cs.sdn.simpledns.packet.DNSResourceRecord;
 
@@ -142,6 +143,20 @@ public class SimpleDNS
 							in which case you will query the received Authoritative Name Server to first get it’s IP, and then continue your initial “recursive process” 
 							and query the initially requested domain using the IP of the received Authoritative Name Server, to finally get the required IP. 
 						*/
+						DNSQuestion question = new DNSQuestion(name, DNS.TYPE_A);
+						DNS n_dns = new DNS();
+						n_dns.addQuestion(question);
+						question.setType(DNS.TYPE_AAAA);
+						n_dns.addQuestion(question);
+						DNS n_answer = recursiveDNS(n_dns, rootServerIp, socket);
+						if (n_answer.getAnswers().size() > 0){
+							got_a_match = true;
+							List<DNSResourceRecord> n_answers = n_answer.getAnswers();
+							DNS responseDNS = recursiveDNS(dns, n_answers.get(0).getData().toString(), socket);
+							if (responseDNS.getAnswers().size() > 0){
+								return responseDNS;
+							}
+						}
 					}
 				}
 			}
