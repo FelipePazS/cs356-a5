@@ -143,7 +143,7 @@ public class SimpleDNS
 				String name = authority.getData().toString();
 				System.out.println("--Trying authority " + name);
 				for (DNSResourceRecord additional : recDNS.getAdditional()){
-					if (additional.getName().equals(name)){
+					if (additional.getName().equals(name) && additional.getType() == DNS.TYPE_A){
 						System.out.println("--Found additional that has IP for this authority.");
 						got_a_match = true;
 						DNS responseDNS = recursiveDNS(dns, additional.getData().toString(), socket);
@@ -209,7 +209,9 @@ public class SimpleDNS
 			}
 
 		} catch (Exception e) {
+			System.out.println("In recurssion: ");
 			System.out.println(e);
+			System.exit(0);
 		}
 		return null;
 	}
