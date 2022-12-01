@@ -69,6 +69,7 @@ public class SimpleDNS
 				DNS dnsResponse = new DNS();
 				if(dns.isRecursionDesired()){
 					System.out.println("--Is recursive.");
+					short old_id = dns.getId();
 					// take out all questions
 					DNSQuestion q = dns.getQuestions().get(0);
 					List<DNSQuestion> qs = new ArrayList<DNSQuestion>();
@@ -78,7 +79,7 @@ public class SimpleDNS
 					dns.setRecursionDesired(false);
 					dns.setId((short) (dns.getId() + (short) 1));
 					dnsResponse = recursiveDNS(dns, rootServerIp, socket);
-					dnsResponse.setId(dns.getId());
+					dnsResponse.setId(old_id);
 				}
 				else {
 					System.out.println("--Is non recursive.");
@@ -131,6 +132,7 @@ public class SimpleDNS
 			List<DNSResourceRecord> answers = recDNS.getAnswers();
 			DNSQuestion question = dns.getQuestions().get(0);
 			for (DNSResourceRecord answer : answers){
+				System.out.println("--Got an answer: " + answer.toString());
 				if (answer.getType() == DNS.TYPE_CNAME){
 					DNS CNAME_response = solveCNAME(answer.getData().toString(), rootServerIp, socket, recDNS);
 					if (CNAME_response != null){
@@ -215,8 +217,7 @@ public class SimpleDNS
 		// CNAME_query.setId((short) (dns.getId() + 1));
 		DNS CNAME_response = recursiveDNS(CNAME_query, IP, socket);
 		if (CNAME_response != null){
-			List<DNSResourceRecord> CNAME_answers = CNAME_response.getAnswers();
-			for (DNSResourceRecord answer : CNAME_answers){
+			for (DNSResourceRecord answer : CNAME_response.getAnswers()){
 				if (answer.getType() == DNS.TYPE_A || answer.getType() == DNS.TYPE_AAAA){
 					System.out.println("--CNAME solved: " + answer.toString());
 					dns.addAnswer(answer);
