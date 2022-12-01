@@ -141,7 +141,7 @@ public class SimpleDNS
 							System.out.println("--Answer: " + answer2.toString());
 							if (answer2.getType() == DNS.TYPE_CNAME){
 								//solve for CNAME
-
+								DNS responseDNS2 = recursiveDNS(responseDNS, rootServerIp, socket);
 							}
 							else {
 								return responseDNS;
