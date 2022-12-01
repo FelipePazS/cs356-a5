@@ -150,6 +150,9 @@ public class SimpleDNS
 									responseDNS.addAnswer(CNAME_answer);
 									return responseDNS;
 								}
+								else {
+									System.out.println("--CNAME did not solved"));
+								}
 							}
 							else {
 								return responseDNS;
