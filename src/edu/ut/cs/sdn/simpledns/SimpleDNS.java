@@ -109,8 +109,8 @@ public class SimpleDNS
 
 	private static DNS recursiveDNS(DNS dns, String IP,  DatagramSocket socket) {
 		try {
-			// System.out.println("--Recursive over:");
-			// System.out.println(dns.toString());
+			System.out.println("--Recursive over:");
+			System.out.println(dns.toString());
 			InetAddress inet = InetAddress.getByName(IP);
 			DatagramPacket sendPacket = new DatagramPacket(dns.serialize(), dns.getLength(), inet, SEND_PORT);
 			DatagramPacket receivePacket = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
