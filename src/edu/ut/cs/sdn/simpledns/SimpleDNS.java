@@ -141,7 +141,15 @@ public class SimpleDNS
 							System.out.println("--Answer: " + answer2.toString());
 							if (answer2.getType() == DNS.TYPE_CNAME){
 								//solve for CNAME
-								DNS responseDNS2 = recursiveDNS(responseDNS, rootServerIp, socket);
+								System.out.println("--Solving for CNAME");
+								DNS CNAME_response = recursiveDNS(responseDNS, rootServerIp, socket);
+								List<DNSResourceRecord> CNAME_answers = CNAME_response.getAnswers();
+								if (CNAME_answers.size() > 0){
+									DNSResourceRecord CNAME_answer = CNAME_answers.get(0);
+									System.out.println("--CNAME solved: " + CNAME_answer.toString());
+									responseDNS.addAnswer(CNAME_answer);
+									return responseDNS;
+								}
 							}
 							else {
 								return responseDNS;
