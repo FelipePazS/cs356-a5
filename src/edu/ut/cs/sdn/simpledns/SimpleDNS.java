@@ -69,11 +69,15 @@ public class SimpleDNS
 				DNS dnsResponse = new DNS();
 				if(dns.isRecursionDesired()){
 					System.out.println("--Is recursive.");
-					DNS n_dns = new DNS();
-					n_dns.addQuestion(dns.getQuestions().get(0));
-					n_dns.setRecursionDesired(false);
-					n_dns.setId((short) (dns.getId() + (short) 1));
-					dnsResponse = recursiveDNS(n_dns, rootServerIp, socket);
+					// take out all questions
+					DNSQuestion q = dns.getQuestions().get(0);
+					List<DNSQuestion> qs = new ArrayList<DNSQuestion>();
+					qs.add(q);
+					dns.setQuestions(qs);
+					// change recursion and id
+					dns.setRecursionDesired(false);
+					dns.setId((short) (dns.getId() + (short) 1));
+					dnsResponse = recursiveDNS(dns, rootServerIp, socket);
 					dnsResponse.setId(dns.getId());
 				}
 				else {
