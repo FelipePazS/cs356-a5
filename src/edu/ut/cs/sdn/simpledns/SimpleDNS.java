@@ -77,7 +77,7 @@ public class SimpleDNS
 				}
 
 				for (DNSResourceRecord answer : dnsResponse.getAnswers()) {
-					System.out.println("--Going over answers");
+					System.out.println("--Going over EC2");
 					//handle EC2
 					if (DNS.TYPE_A == queryType && DNS.TYPE_CNAME == answer.getType()) {
 						// longest match
@@ -118,44 +118,54 @@ public class SimpleDNS
 			socket.receive(receivePacket);
 
 			DNS recDNS = DNS.deserialize(receivePacket.getData(), receivePacket.getLength());
-
 			List<DNSResourceRecord> answers = recDNS.getAnswers();
-			if (answers.size() > 0) {
-				// got an answer! return this packet up to be sent to client
-				return recDNS;
-			} else {
-				// didn't got an answer, loop through the Authority RR that we got.
-				for (DNSResourceRecord authority : recDNS.getAuthorities()){
-					boolean got_a_match = false;
-					String name = authority.getData().toString();
-					System.out.println("--Going over " + name);
-					for (DNSResourceRecord additional : recDNS.getAdditional()){
-						if (additional.getName().equals(name)){
-							got_a_match = true;
-							DNS responseDNS = recursiveDNS(dns, additional.getData().toString(), socket);
-							if (responseDNS.getAnswers().size() > 0){
+
+			for (DNSResourceRecord answer : answers){
+				if (answer.getName().equals(dns.getQuestions().get(0).getName())){
+					return recDNS;
+				}
+			}
+			// didn't got an answer, loop through the Authority RR that we got.
+			for (DNSResourceRecord authority : recDNS.getAuthorities()){
+				boolean got_a_match = false;
+				String name = authority.getData().toString();
+				System.out.println("--Trying authority " + name);
+				for (DNSResourceRecord additional : recDNS.getAdditional()){
+					if (additional.getName().equals(name)){
+						got_a_match = true;
+						DNS responseDNS = recursiveDNS(dns, additional.getData().toString(), socket);
+						List<DNSResourceRecord> answers2 = responseDNS.getAnswers();
+						if  (answers2.size() > 0){
+							DNSResourceRecord answer2 = answers2.get(0);
+							System.out.println("--Got answer from " + name);
+							System.out.println("--Answer: " + answer2.toString());
+							if (answer2.getType() == DNS.TYPE_CNAME){
+								//solve for CNAME
+
+							}
+							else {
 								return responseDNS;
 							}
 						}
 					}
-					if (!got_a_match){
-						/*	The assignment spec expects you to handle the case where you receive an Authoritative resource record, but no additional records, 
-							in which case you will query the received Authoritative Name Server to first get it’s IP, and then continue your initial “recursive process” 
-							and query the initially requested domain using the IP of the received Authoritative Name Server, to finally get the required IP. 
-						*/
-						DNSQuestion question = new DNSQuestion(name, DNS.TYPE_A);
-						DNS n_dns = new DNS();
-						n_dns.addQuestion(question);
-						question.setType(DNS.TYPE_AAAA);
-						n_dns.addQuestion(question);
-						DNS n_answer = recursiveDNS(n_dns, rootServerIp, socket);
-						if (n_answer.getAnswers().size() > 0){
-							got_a_match = true;
-							List<DNSResourceRecord> n_answers = n_answer.getAnswers();
-							DNS responseDNS = recursiveDNS(dns, n_answers.get(0).getData().toString(), socket);
-							if (responseDNS.getAnswers().size() > 0){
-								return responseDNS;
-							}
+				}
+				if (!got_a_match){
+					/*	The assignment spec expects you to handle the case where you receive an Authoritative resource record, but no additional records, 
+						in which case you will query the received Authoritative Name Server to first get it’s IP, and then continue your initial “recursive process” 
+						and query the initially requested domain using the IP of the received Authoritative Name Server, to finally get the required IP. 
+					*/
+					DNSQuestion question = new DNSQuestion(name, DNS.TYPE_A);
+					DNS n_dns = new DNS();
+					n_dns.addQuestion(question);
+					question.setType(DNS.TYPE_AAAA);
+					n_dns.addQuestion(question);
+					DNS n_answer = recursiveDNS(n_dns, rootServerIp, socket);
+					if (n_answer.getAnswers().size() > 0){
+						got_a_match = true;
+						List<DNSResourceRecord> n_answers = n_answer.getAnswers();
+						DNS responseDNS = recursiveDNS(dns, n_answers.get(0).getData().toString(), socket);
+						if (responseDNS.getAnswers().size() > 0){
+							return responseDNS;
 						}
 					}
 				}
