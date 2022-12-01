@@ -133,15 +133,18 @@ public class SimpleDNS
 			DNSQuestion question = dns.getQuestions().get(0);
 			for (DNSResourceRecord answer : answers){
 				System.out.println("--Got an answer: " + answer.toString());
-				if (answer.getType() == DNS.TYPE_CNAME){
-					DNS CNAME_response = solveCNAME(answer.getData().toString(), rootServerIp, socket, recDNS);
+				if (answer.getName().equals(question.getName()) && answer.getType() == question.getType()){
+					System.out.println("--It was what I was looking for");
+					return recDNS;
+				}
+				// got a different answer, maybe I asked for A / AAAA and got CNAME?
+				if ((question.getType() == DNS.TYPE_A || question.getType() == DNS.TYPE_AAAA) && answer.getType() == DNS.TYPE_CNAME){
+					System.out.println("--It was CNAME when I looked for A / AAAA");
+					// DNS CNAME_response = solveCNAME(answer.getData().toString(), rootServerIp, socket, recDNS);
+					DNS CNAME_response = solveCNAME(answer.getData().toString(), IP, socket, recDNS);
 					if (CNAME_response != null){
 						return CNAME_response;
 					}
-				}
-				else if (answer.getName().equals(question.getName())){
-					System.out.println("--Got an answer!");
-					return recDNS;
 				}
 			}
 			// didn't got an answer, loop through the Authority RR that we got.
@@ -155,28 +158,28 @@ public class SimpleDNS
 						System.out.println("--Found additional that has IP for this authority.");
 						got_a_match = true;
 						DNS responseDNS = recursiveDNS(dns, additional.getData().toString(), socket);
-						if  (responseDNS == null) continue;
-						List<DNSResourceRecord> answers2 = responseDNS.getAnswers();
-						if  (answers2.size() > 0){
-							DNSResourceRecord answer2 = answers2.get(0);
-							System.out.println("--Got answer from " + name);
-							System.out.println("--Answer: " + answer2.toString());
-							if (answer2.getType() == DNS.TYPE_CNAME){
-								//solve for CNAME
-								System.out.println("--Solving for CNAME");
-								DNS CNAME_response = solveCNAME(answer2.getData().toString(), rootServerIp, socket, responseDNS);
-								// DNS CNAME_response = recursiveDNS(CNAME_query, additional.getData().toString(), socket);
-								if (CNAME_response == null){
-									System.out.println("--CNAME did not solved");
-								}
-								else {
-									return CNAME_response;
-								}
-							}
-							else {
-								return responseDNS;
-							}
-						}
+						if  (responseDNS != null) return responseDNS;
+						// List<DNSResourceRecord> answers2 = responseDNS.getAnswers();
+						// if  (answers2.size() > 0){
+						// 	DNSResourceRecord answer2 = answers2.get(0);
+						// 	System.out.println("--Got answer from " + name);
+						// 	System.out.println("--Answer: " + answer2.toString());
+						// 	if (answer2.getType() == DNS.TYPE_CNAME){
+						// 		//solve for CNAME
+						// 		System.out.println("--Solving for CNAME");
+						// 		DNS CNAME_response = solveCNAME(answer2.getData().toString(), rootServerIp, socket, responseDNS);
+						// 		// DNS CNAME_response = recursiveDNS(CNAME_query, additional.getData().toString(), socket);
+						// 		if (CNAME_response == null){
+						// 			System.out.println("--CNAME did not solved");
+						// 		}
+						// 		else {
+						// 			return CNAME_response;
+						// 		}
+						// 	}
+						// 	else {
+						// 		return responseDNS;
+						// 	}
+						// }
 					}
 				}
 				if (!got_a_match){
@@ -199,6 +202,7 @@ public class SimpleDNS
 					}
 				}
 			}
+			return null;
 
 		} catch (Exception e) {
 			System.out.println("In recurssion: ");
