@@ -143,6 +143,10 @@ public class SimpleDNS
 								//solve for CNAME
 								System.out.println("--Solving for CNAME");
 								DNS CNAME_response = recursiveDNS(responseDNS, rootServerIp, socket);
+								if (CNAME_response == null){
+									System.out.println("--CNAME did not solved");
+									continue;
+								}
 								List<DNSResourceRecord> CNAME_answers = CNAME_response.getAnswers();
 								if (CNAME_answers.size() > 0){
 									DNSResourceRecord CNAME_answer = CNAME_answers.get(0);
