@@ -145,7 +145,6 @@ public class SimpleDNS
 								DNS CNAME_response = recursiveDNS(responseDNS, rootServerIp, socket);
 								if (CNAME_response == null){
 									System.out.println("--CNAME did not solved");
-									continue;
 								}
 								else {
 									List<DNSResourceRecord> CNAME_answers = CNAME_response.getAnswers();
@@ -187,8 +186,6 @@ public class SimpleDNS
 					}
 				}
 			}
-
-
 
 		} catch (Exception e) {
 			System.out.println(e);
