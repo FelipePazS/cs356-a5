@@ -129,9 +129,15 @@ public class SimpleDNS
 
 			DNS recDNS = DNS.deserialize(receivePacket.getData(), receivePacket.getLength());
 			List<DNSResourceRecord> answers = recDNS.getAnswers();
-
+			DNSQuestion question = dns.getQuestions().get(0);
 			for (DNSResourceRecord answer : answers){
-				if (answer.getName().equals(dns.getQuestions().get(0).getName())){
+				if (answer.getType() == DNS.TYPE_CNAME){
+					DNS CNAME_response = solveCNAME(answer.getData().toString(), rootServerIp, socket, recDNS);
+					if (CNAME_response != null){
+						return CNAME_response;
+					}
+				}
+				else if (answer.getName().equals(question.getName())){
 					System.out.println("--Got an answer!");
 					return recDNS;
 				}
@@ -156,28 +162,13 @@ public class SimpleDNS
 							if (answer2.getType() == DNS.TYPE_CNAME){
 								//solve for CNAME
 								System.out.println("--Solving for CNAME");
-								DNSQuestion CNAME_question = new DNSQuestion(answer2.getData().toString(), DNS.TYPE_CNAME);
-								DNS CNAME_query = new DNS();
-								CNAME_query.setQuery(true);
-								CNAME_query.addQuestion(CNAME_question);
-								CNAME_query.setRecursionDesired(false);
-								CNAME_query.setId((short) (dns.getId() + 1));
-								DNS CNAME_response = recursiveDNS(CNAME_query, rootServerIp, socket);
+								DNS CNAME_response = solveCNAME(answer2.getData().toString(), rootServerIp, socket, responseDNS);
 								// DNS CNAME_response = recursiveDNS(CNAME_query, additional.getData().toString(), socket);
 								if (CNAME_response == null){
 									System.out.println("--CNAME did not solved");
 								}
 								else {
-									List<DNSResourceRecord> CNAME_answers = CNAME_response.getAnswers();
-									if (CNAME_answers.size() > 0){
-										DNSResourceRecord CNAME_answer = CNAME_answers.get(0);
-										System.out.println("--CNAME solved: " + CNAME_answer.toString());
-										responseDNS.addAnswer(CNAME_answer);
-										return responseDNS;
-									}
-									else {
-										System.out.println("--CNAME did not solved");
-									}
+									return CNAME_response;
 								}
 							}
 							else {
@@ -191,7 +182,7 @@ public class SimpleDNS
 						in which case you will query the received Authoritative Name Server to first get it’s IP, and then continue your initial “recursive process” 
 						and query the initially requested domain using the IP of the received Authoritative Name Server, to finally get the required IP. 
 					*/
-					DNSQuestion question = new DNSQuestion(name, DNS.TYPE_A);
+					question = new DNSQuestion(name, DNS.TYPE_A);
 					DNS n_dns = new DNS();
 					n_dns.addQuestion(question);
 					n_dns.setQuery(true);
@@ -211,6 +202,27 @@ public class SimpleDNS
 			System.out.println("In recurssion: ");
 			System.out.println(e);
 			System.exit(0);
+		}
+		return null;
+	}
+
+	private static DNS solveCNAME(String name, String IP, DatagramSocket socket, DNS dns){
+		DNSQuestion CNAME_question = new DNSQuestion(name, DNS.TYPE_CNAME);
+		DNS CNAME_query = new DNS();
+		CNAME_query.setQuery(true);
+		CNAME_query.addQuestion(CNAME_question);
+		CNAME_query.setRecursionDesired(false);
+		// CNAME_query.setId((short) (dns.getId() + 1));
+		DNS CNAME_response = recursiveDNS(CNAME_query, IP, socket);
+		if (CNAME_response != null){
+			List<DNSResourceRecord> CNAME_answers = CNAME_response.getAnswers();
+			for (DNSResourceRecord answer : CNAME_answers){
+				if (answer.getType() == DNS.TYPE_A || answer.getType() == DNS.TYPE_AAAA){
+					System.out.println("--CNAME solved: " + answer.toString());
+					dns.addAnswer(answer);
+					return dns;
+				}
+			}
 		}
 		return null;
 	}
