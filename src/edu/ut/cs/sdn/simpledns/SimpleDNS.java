@@ -109,8 +109,8 @@ public class SimpleDNS
 
 	private static DNS recursiveDNS(DNS dns, String IP,  DatagramSocket socket) {
 		try {
-			System.out.println("--Recursive over:");
-			System.out.println(dns.toString());
+			// System.out.println("--Recursive over:");
+			// System.out.println(dns.toString());
 			InetAddress inet = InetAddress.getByName(IP);
 			DatagramPacket sendPacket = new DatagramPacket(dns.serialize(), dns.getLength(), inet, SEND_PORT);
 			DatagramPacket receivePacket = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
@@ -143,7 +143,10 @@ public class SimpleDNS
 							if (answer2.getType() == DNS.TYPE_CNAME){
 								//solve for CNAME
 								System.out.println("--Solving for CNAME");
-								DNS CNAME_response = recursiveDNS(responseDNS, rootServerIp, socket);
+								DNSQuestion CNAME_question = new DNSQuestion(answer2.getData().toString(), DNS.TYPE_CNAME);
+								DNS CNAME_query = new DNS();
+								CNAME_query.addQuestion(CNAME_question);
+								DNS CNAME_response = recursiveDNS(CNAME_query, rootServerIp, socket);
 								if (CNAME_response == null){
 									System.out.println("--CNAME did not solved");
 								}
