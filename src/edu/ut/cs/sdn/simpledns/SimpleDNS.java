@@ -160,7 +160,8 @@ public class SimpleDNS
 								CNAME_query.addQuestion(CNAME_question);
 								CNAME_query.setRecursionDesired(false);
 								CNAME_query.setId((short) (dns.getId() + 1));
-								DNS CNAME_response = recursiveDNS(CNAME_query, rootServerIp, socket);
+								// DNS CNAME_response = recursiveDNS(CNAME_query, rootServerIp, socket);
+								DNS CNAME_response = recursiveDNS(CNAME_query, additional.getData().toString(), socket);
 								if (CNAME_response == null){
 									System.out.println("--CNAME did not solved");
 								}
