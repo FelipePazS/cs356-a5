@@ -157,11 +157,12 @@ public class SimpleDNS
 								System.out.println("--Solving for CNAME");
 								DNSQuestion CNAME_question = new DNSQuestion(answer2.getData().toString(), DNS.TYPE_CNAME);
 								DNS CNAME_query = new DNS();
+								CNAME_query.setQuery(true);
 								CNAME_query.addQuestion(CNAME_question);
 								CNAME_query.setRecursionDesired(false);
 								CNAME_query.setId((short) (dns.getId() + 1));
-								// DNS CNAME_response = recursiveDNS(CNAME_query, rootServerIp, socket);
-								DNS CNAME_response = recursiveDNS(CNAME_query, additional.getData().toString(), socket);
+								DNS CNAME_response = recursiveDNS(CNAME_query, rootServerIp, socket);
+								// DNS CNAME_response = recursiveDNS(CNAME_query, additional.getData().toString(), socket);
 								if (CNAME_response == null){
 									System.out.println("--CNAME did not solved");
 								}
