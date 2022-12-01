@@ -147,15 +147,17 @@ public class SimpleDNS
 									System.out.println("--CNAME did not solved");
 									continue;
 								}
-								List<DNSResourceRecord> CNAME_answers = CNAME_response.getAnswers();
-								if (CNAME_answers.size() > 0){
-									DNSResourceRecord CNAME_answer = CNAME_answers.get(0);
-									System.out.println("--CNAME solved: " + CNAME_answer.toString());
-									responseDNS.addAnswer(CNAME_answer);
-									return responseDNS;
-								}
 								else {
-									System.out.println("--CNAME did not solved");
+									List<DNSResourceRecord> CNAME_answers = CNAME_response.getAnswers();
+									if (CNAME_answers.size() > 0){
+										DNSResourceRecord CNAME_answer = CNAME_answers.get(0);
+										System.out.println("--CNAME solved: " + CNAME_answer.toString());
+										responseDNS.addAnswer(CNAME_answer);
+										return responseDNS;
+									}
+									else {
+										System.out.println("--CNAME did not solved");
+									}
 								}
 							}
 							else {
