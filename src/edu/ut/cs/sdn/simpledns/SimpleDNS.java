@@ -137,16 +137,17 @@ public class SimpleDNS
 				}
 			}
 			// didn't got an answer, loop through the Authority RR that we got.
-			System.out.println("--Didn't got an answer going over authorities");
+			System.out.println("--Didn't got an answer, going over authorities");
 			for (DNSResourceRecord authority : recDNS.getAuthorities()){
 				boolean got_a_match = false;
 				String name = authority.getData().toString();
 				System.out.println("--Trying authority " + name);
 				for (DNSResourceRecord additional : recDNS.getAdditional()){
-					if (additional.getName().equals(name) && additional.getType() == DNS.TYPE_A){
+					if (additional.getName().equals(name)){
 						System.out.println("--Found additional that has IP for this authority.");
 						got_a_match = true;
 						DNS responseDNS = recursiveDNS(dns, additional.getData().toString(), socket);
+						if  (responseDNS == null) continue;
 						List<DNSResourceRecord> answers2 = responseDNS.getAnswers();
 						if  (answers2.size() > 0){
 							DNSResourceRecord answer2 = answers2.get(0);
