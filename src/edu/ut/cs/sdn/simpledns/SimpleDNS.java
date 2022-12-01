@@ -155,7 +155,7 @@ public class SimpleDNS
 							if (answer2.getType() == DNS.TYPE_CNAME){
 								//solve for CNAME
 								System.out.println("--Solving for CNAME");
-								DNSQuestion CNAME_question = new DNSQuestion(answer2.getData().toString(), DNS.TYPE_CNAME);
+								DNSQuestion CNAME_question = new DNSQuestion(answer2.getData().toString(), DNS.TYPE_A);
 								DNS CNAME_query = new DNS();
 								CNAME_query.addQuestion(CNAME_question);
 								CNAME_query.setRecursionDesired(false);
