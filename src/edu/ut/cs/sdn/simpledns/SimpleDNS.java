@@ -140,8 +140,8 @@ public class SimpleDNS
 				// got a different answer, maybe I asked for A / AAAA and got CNAME?
 				if ((question.getType() == DNS.TYPE_A || question.getType() == DNS.TYPE_AAAA) && answer.getType() == DNS.TYPE_CNAME){
 					System.out.println("--It was CNAME when I looked for A / AAAA");
-					// DNS CNAME_response = solveCNAME(answer.getData().toString(), rootServerIp, socket, recDNS);
-					DNS CNAME_response = solveCNAME(answer.getData().toString(), IP, socket, recDNS);
+					DNS CNAME_response = solveCNAME(answer.getData().toString(), rootServerIp, socket, recDNS);
+					// DNS CNAME_response = solveCNAME(answer.getData().toString(), IP, socket, recDNS);
 					if (CNAME_response != null){
 						return CNAME_response;
 					}
