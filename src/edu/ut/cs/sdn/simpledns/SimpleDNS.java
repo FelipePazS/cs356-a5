@@ -263,15 +263,20 @@ public class SimpleDNS
 	}
 
 	private static DNSRdataString ec2match(DNSResourceRecord answer){
+		// Assuming answer has the ip we're trying to match
 		DNSRdataString ans = new DNSRdataString();
 		String looking_for = answer.getData().toString();
 		String best_name = null;
 		String best_ip = null;
 
+
+
 		for (EC2Entry ec2Entry : ec2Entries) {
+			// need to convert string ip to int ip to uase mask
 			String entryIp = ec2Entry.getIp();
 			String[] ipParts = entryIp.split("\\.");
-			
+
+
 
 
 		}
