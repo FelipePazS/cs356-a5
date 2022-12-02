@@ -137,8 +137,8 @@ public class SimpleDNS
 				// got a different answer, maybe I asked for A / AAAA and got CNAME?
 				if ((question.getType() == DNS.TYPE_A || question.getType() == DNS.TYPE_AAAA) && answer.getType() == DNS.TYPE_CNAME){
 					System.out.println("--It was CNAME when I looked for A / AAAA");
-					DNS CNAME_response = solveCNAME(answer.getData().toString(), rootServerIp, socket, recDNS);
-					// DNS CNAME_response = solveCNAME(answer.getData().toString(), IP, socket, recDNS);
+					// DNS CNAME_response = solveCNAME(answer.getData().toString(), rootServerIp, socket, recDNS);
+					DNS CNAME_response = solveCNAME(answer.getData().toString(), IP, socket, recDNS);
 					if (CNAME_response != null){
 						return CNAME_response;
 					}
@@ -189,11 +189,12 @@ public class SimpleDNS
 	}
 
 	private static DNS solveCNAME(String name, String IP, DatagramSocket socket, DNS dns){
-		DNSQuestion CNAME_question = new DNSQuestion(name, DNS.TYPE_CNAME);
+		DNSQuestion CNAME_question = new DNSQuestion(name, DNS.TYPE_A);
 		DNS CNAME_query = new DNS();
 		CNAME_query.setQuery(true);
 		CNAME_query.addQuestion(CNAME_question);
 		CNAME_query.setRecursionDesired(false);
+		CNAME_query.setRecursionAvailable(false);
 		// CNAME_query.setId((short) (dns.getId() + 1));
 		DNS CNAME_response = recursiveDNS(CNAME_query, IP, socket);
 		if (CNAME_response != null){
