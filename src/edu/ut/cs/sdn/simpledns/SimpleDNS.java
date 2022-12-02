@@ -183,7 +183,7 @@ public class SimpleDNS
 		} catch (Exception e) {
 			System.out.println("In recurssion: ");
 			System.out.println(e);
-			System.exit(0);
+			// System.exit(0);
 		}
 		return null;
 	}
