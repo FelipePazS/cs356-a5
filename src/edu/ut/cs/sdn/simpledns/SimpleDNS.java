@@ -83,18 +83,18 @@ public class SimpleDNS
 					dnsResponse = nonrecursiveDNS(dns, socket);
 				}
 
-				for (DNSResourceRecord answer : dnsResponse.getAnswers()) {
-					System.out.println("--Going over EC2");
-					//handle EC2
-					if (DNS.TYPE_A == queryType && DNS.TYPE_CNAME == answer.getType()) {
-						// longest match
-						DNSRdataString ec2String = ec2match(answer);
-						if (ec2String != null){
-							DNSResourceRecord txtRecord = new DNSResourceRecord(answer.getName(), DNS_TXT, ec2String);
-							dnsResponse.addAnswer(txtRecord);
-						}
-					}
-				}
+				// for (DNSResourceRecord answer : dnsResponse.getAnswers()) {
+				// 	System.out.println("--Going over EC2");
+				// 	//handle EC2
+				// 	if (DNS.TYPE_A == queryType && DNS.TYPE_CNAME == answer.getType()) {
+				// 		// longest match
+				// 		DNSRdataString ec2String = ec2match(answer);
+				// 		if (ec2String != null){
+				// 			DNSResourceRecord txtRecord = new DNSResourceRecord(answer.getName(), DNS_TXT, ec2String);
+				// 			dnsResponse.addAnswer(txtRecord);
+				// 		}
+				// 	}
+				// }
 				
 				System.out.println("--Sending response packet:");
 				System.out.println(dnsResponse.toString());
@@ -118,6 +118,7 @@ public class SimpleDNS
 		try {
 			System.out.println("--Recursive over:");
 			System.out.println(dns.toString());
+			DNSQuestion question = dns.getQuestions().get(0);
 			InetAddress inet = InetAddress.getByName(IP);
 			DatagramPacket sendPacket = new DatagramPacket(dns.serialize(), dns.getLength(), inet, SEND_PORT);
 			DatagramPacket receivePacket = new DatagramPacket(new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
@@ -127,7 +128,6 @@ public class SimpleDNS
 
 			DNS recDNS = DNS.deserialize(receivePacket.getData(), receivePacket.getLength());
 			List<DNSResourceRecord> answers = recDNS.getAnswers();
-			DNSQuestion question = dns.getQuestions().get(0);
 			for (DNSResourceRecord answer : answers){
 				System.out.println("--Got an answer: " + answer.toString());
 				if (answer.getName().equals(question.getName()) && answer.getType() == question.getType()){
@@ -151,7 +151,7 @@ public class SimpleDNS
 				String name = authority.getData().toString();
 				System.out.println("--Trying authority " + name);
 				for (DNSResourceRecord additional : recDNS.getAdditional()){
-					if (additional.getName().equals(name) && additional.getType() == DNS.TYPE_A){
+					if (additional.getName().equals(name)){
 						System.out.println("--Found additional that has IP for this authority.");
 						// got_a_match = true;
 						DNS responseDNS = recursiveDNS(dns, additional.getData().toString(), socket);
