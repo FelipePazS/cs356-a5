@@ -265,7 +265,7 @@ public class SimpleDNS
 	private static DNSRdataString ec2match(DNSResourceRecord answer){
 		// Assuming answer has the ip we're trying to match
 		DNSRdataString ans = new DNSRdataString();
-		String looking_for = answer.getData().toString();
+		int ip = stringToIntIp(answer.getData().toString());
 		String best_name = null;
 		String best_ip = null;
 
@@ -273,16 +273,22 @@ public class SimpleDNS
 
 		for (EC2Entry ec2Entry : ec2Entries) {
 			// need to convert string ip to int ip to uase mask
-			String entryIp = ec2Entry.getIp();
-			String[] ipParts = entryIp.split("\\.");
-
-
-
+			int entryIp = stringToIntIp(ec2Entry.getIp());
 
 		}
 
 
 		return null;
+	}
+
+	private static int stringToIntIp (String stringIp) {
+		int intIp = 0;
+		String[] ipParts = stringIp.split("\\.");
+		for (String ipPart : ipParts) {
+			intIp = intIp << 8;
+			intIp |= Integer.parseInt(ipPart);
+		}
+		return intIp;
 	}
 
 	private static DNS nonrecursiveDNS(DNS dns, DatagramSocket socket) {
