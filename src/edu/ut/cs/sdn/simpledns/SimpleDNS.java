@@ -263,22 +263,28 @@ public class SimpleDNS
 	}
 
 	private static DNSRdataString ec2match(DNSResourceRecord answer){
-		// Assuming answer has the ip we're trying to match
-		DNSRdataString ans = new DNSRdataString();
 		int ip = stringToIntIp(answer.getData().toString());
-		String best_name = null;
-		String best_ip = null;
-
-
+		int bestMask = 0;
+		EC2Entry bestMatch = null;
 
 		for (EC2Entry ec2Entry : ec2Entries) {
 			// need to convert string ip to int ip to uase mask
 			int entryIp = stringToIntIp(ec2Entry.getIp());
+			int mask = Integer.parseInt(ec2Entry.getMask());
+			int maskedIp = ip & mask;
+			int maskedEntryIp = entryIp & mask;
+			if (maskedIp == maskedEntryIp)
+			{
+				if ((null == bestMatch) || (mask > bestMask))
+				{
+					bestMask = mask;
+					bestMatch = ec2Entry;
+				}
+			}
 
 		}
-
-
-		return null;
+		DNSRdataString ec2Txt = new DNSRdataString(bestMatch + "-" + ip);
+		return ec2Txt;
 	}
 
 	private static int stringToIntIp (String stringIp) {
