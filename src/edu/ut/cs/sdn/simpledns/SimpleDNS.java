@@ -69,7 +69,6 @@ public class SimpleDNS
 				DNS dnsResponse = new DNS();
 				if(dns.isRecursionDesired()){
 					System.out.println("--Is recursive.");
-					short old_id = dns.getId();
 					// take out all questions
 					DNSQuestion q = dns.getQuestions().get(0);
 					List<DNSQuestion> qs = new ArrayList<DNSQuestion>();
@@ -77,9 +76,7 @@ public class SimpleDNS
 					dns.setQuestions(qs);
 					// change recursion and id
 					dns.setRecursionDesired(false);
-					dns.setId((short) (dns.getId() + (short) 1));
 					dnsResponse = recursiveDNS(dns, rootServerIp, socket);
-					dnsResponse.setId(old_id);
 				}
 				else {
 					System.out.println("--Is non recursive.");
@@ -150,57 +147,36 @@ public class SimpleDNS
 			// didn't got an answer, loop through the Authority RR that we got.
 			System.out.println("--Didn't got an answer, going over authorities");
 			for (DNSResourceRecord authority : recDNS.getAuthorities()){
-				boolean got_a_match = false;
+				// boolean got_a_match = false;
 				String name = authority.getData().toString();
 				System.out.println("--Trying authority " + name);
 				for (DNSResourceRecord additional : recDNS.getAdditional()){
 					if (additional.getName().equals(name) && additional.getType() == DNS.TYPE_A){
 						System.out.println("--Found additional that has IP for this authority.");
-						got_a_match = true;
+						// got_a_match = true;
 						DNS responseDNS = recursiveDNS(dns, additional.getData().toString(), socket);
 						if  (responseDNS != null) return responseDNS;
-						// List<DNSResourceRecord> answers2 = responseDNS.getAnswers();
-						// if  (answers2.size() > 0){
-						// 	DNSResourceRecord answer2 = answers2.get(0);
-						// 	System.out.println("--Got answer from " + name);
-						// 	System.out.println("--Answer: " + answer2.toString());
-						// 	if (answer2.getType() == DNS.TYPE_CNAME){
-						// 		//solve for CNAME
-						// 		System.out.println("--Solving for CNAME");
-						// 		DNS CNAME_response = solveCNAME(answer2.getData().toString(), rootServerIp, socket, responseDNS);
-						// 		// DNS CNAME_response = recursiveDNS(CNAME_query, additional.getData().toString(), socket);
-						// 		if (CNAME_response == null){
-						// 			System.out.println("--CNAME did not solved");
-						// 		}
-						// 		else {
-						// 			return CNAME_response;
-						// 		}
-						// 	}
-						// 	else {
-						// 		return responseDNS;
-						// 	}
-						// }
 					}
 				}
-				if (!got_a_match){
+				// if (!got_a_match){
 					/*	The assignment spec expects you to handle the case where you receive an Authoritative resource record, but no additional records, 
 						in which case you will query the received Authoritative Name Server to first get it’s IP, and then continue your initial “recursive process” 
 						and query the initially requested domain using the IP of the received Authoritative Name Server, to finally get the required IP. 
 					*/
-					question = new DNSQuestion(name, DNS.TYPE_A);
-					DNS n_dns = new DNS();
-					n_dns.addQuestion(question);
-					n_dns.setQuery(true);
-					DNS n_answer = recursiveDNS(n_dns, rootServerIp, socket);
-					if (n_answer.getAnswers().size() > 0){
-						got_a_match = true;
-						List<DNSResourceRecord> n_answers = n_answer.getAnswers();
-						DNS responseDNS = recursiveDNS(dns, n_answers.get(0).getData().toString(), socket);
-						if (responseDNS.getAnswers().size() > 0){
-							return responseDNS;
-						}
-					}
-				}
+					// question = new DNSQuestion(name, DNS.TYPE_A);
+					// DNS n_dns = new DNS();
+					// n_dns.addQuestion(question);
+					// n_dns.setQuery(true);
+					// DNS n_answer = recursiveDNS(n_dns, rootServerIp, socket);
+					// if (n_answer.getAnswers().size() > 0){
+					// 	got_a_match = true;
+					// 	List<DNSResourceRecord> n_answers = n_answer.getAnswers();
+					// 	DNS responseDNS = recursiveDNS(dns, n_answers.get(0).getData().toString(), socket);
+					// 	if (responseDNS.getAnswers().size() > 0){
+					// 		return responseDNS;
+					// 	}
+					// }
+				// }
 			}
 			return null;
 
