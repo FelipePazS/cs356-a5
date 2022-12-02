@@ -13,6 +13,32 @@ import java.util.Scanner;
 import java.io.*;
 import java.util.ArrayList;
 
+class EC2Entry {
+	private String ip;
+	private String mask;
+	private String location;
+
+	public EC2Entry(String ip, String mask, String location) {
+		this.ip = ip;
+		this.mask = mask;
+		this.location = location;
+	}
+
+	public String getIp() {
+		return this.ip;
+	}
+
+	public String getMask() {
+		return this.mask;
+	}
+
+	public String getLocation() {
+		return this.location;
+	}
+
+
+}
+
 public class SimpleDNS
 {
 	private static final int REQUIRED_NUM_ARGS = 4;
@@ -27,6 +53,9 @@ public class SimpleDNS
 
 	private static String rootServerIp;
 	private static String ec2;
+	private static List<EC2Entry> ec2Entries;
+
+
 
 
 	/*
@@ -50,6 +79,8 @@ public class SimpleDNS
 
 		rootServerIp = args[1];
 		ec2 = args[3];
+		ec2Entries = getEc2Entries(ec2);
+
 
 		while (true) {
 			try {
@@ -112,6 +143,28 @@ public class SimpleDNS
 
 	private static boolean validQueryType(short queryType) {
 		return (DNS.TYPE_A == queryType || DNS.TYPE_AAAA == queryType || DNS.TYPE_CNAME == queryType || DNS.TYPE_NS == queryType);
+	}
+
+	private static List<EC2Entry> getEc2Entries(String ec2CSV) {
+		List<EC2Entry> ec2Entries = new ArrayList<>();
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(ec2CSV));
+			String ec2Line = reader.readLine();
+			while (ec2Line != null) {
+				String[] ipAndLoc = ec2Line.split(",");
+				String[] ipAndMask = ipAndLoc[0].split("/");
+				String ec2Loc = ipAndLoc[1];
+				String ec2Ip = ipAndMask[0];
+				String ec2Mask = ipAndMask[1];
+				EC2Entry ec2Entry = new EC2Entry(ec2Ip, ec2Mask, ec2Loc);
+				ec2Entries.add(ec2Entry);
+			}
+			reader.close();
+		} catch (Exception e) {
+			System.out.println(e);
+			System.exit(0);
+		}
+		return ec2Entries;
 	}
 
 	private static DNS recursiveDNS(DNS dns, String IP,  DatagramSocket socket) {
@@ -214,23 +267,16 @@ public class SimpleDNS
 		String looking_for = answer.getData().toString();
 		String best_name = null;
 		String best_ip = null;
-		try{
-			Scanner sc = new Scanner(new File("./ec2.csv"));
-			sc.useDelimiter(",");     
-			while (sc.hasNext()){ 
-				String address = sc.next();
-				if (!sc.hasNext()){
-					continue;
-				}
-				String name = sc.next();
-				// longest match
-			}   
-			sc.close(); 
-			return ans;
-		} catch (Exception e) {
-			System.out.println(e);
-			System.exit(0);
+
+		for (EC2Entry ec2Entry : ec2Entries) {
+			String entryIp = ec2Entry.getIp();
+			String[] ipParts = entryIp.split("\\.");
+			
+
+
 		}
+
+
 		return null;
 	}
 
