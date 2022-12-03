@@ -1,82 +1,161 @@
+--Getting EC2 entries
 --Starting to listen for packets
 --Got a packet:
-ID: 0x3a58, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: true, Recursion avail: false
+ID: 0x5086, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: true, Recursion avail: false
 Questions: 1
-	Name: utns.cs.utexas.edu, Type: A, Class: IN
+	Name: www.pinterest.com, Type: A, Class: IN
 Answers: 0
 Authority: 0
 Additional: 1
-	Name: , Type: Unknown (41), Class: Unknown (4096), TTL: 0, Data: 00 0A 00 08 01 6B A6 C9 78 AA 51 79 
+	Name: , Type: Unknown (41), Class: Unknown (4096), TTL: 0, Data: 00 0A 00 08 C4 3B AD 2C A5 94 76 9D 
 
 --Is recursive.
 --Recursive over:
-ID: 0x3a58, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
+ID: 0x5086, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
 Questions: 1
-	Name: utns.cs.utexas.edu, Type: A, Class: IN
+	Name: www.pinterest.com, Type: A, Class: IN
 Answers: 0
 Authority: 0
 Additional: 1
-	Name: , Type: Unknown (41), Class: Unknown (4096), TTL: 0, Data: 00 0A 00 08 01 6B A6 C9 78 AA 51 79 
+	Name: , Type: Unknown (41), Class: Unknown (4096), TTL: 0, Data: 00 0A 00 08 C4 3B AD 2C A5 94 76 9D 
 
 --Didn't got an answer, going over authorities
---Trying authority b.edu-servers.net
+--Trying authority a.gtld-servers.net
 --Found additional that has IP for this authority.
 --Recursive over:
-ID: 0x3a58, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
+ID: 0x5086, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
 Questions: 1
-	Name: utns.cs.utexas.edu, Type: A, Class: IN
+	Name: www.pinterest.com, Type: A, Class: IN
 Answers: 0
 Authority: 0
 Additional: 1
-	Name: , Type: Unknown (41), Class: Unknown (4096), TTL: 0, Data: 00 0A 00 08 01 6B A6 C9 78 AA 51 79 
+	Name: , Type: Unknown (41), Class: Unknown (4096), TTL: 0, Data: 00 0A 00 08 C4 3B AD 2C A5 94 76 9D 
 
 --Didn't got an answer, going over authorities
---Trying authority chisos.ots.utexas.edu
+--Trying authority ns1.pinterest.com
 --Found additional that has IP for this authority.
 --Recursive over:
-ID: 0x3a58, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
+ID: 0x5086, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
 Questions: 1
-	Name: utns.cs.utexas.edu, Type: A, Class: IN
+	Name: www.pinterest.com, Type: A, Class: IN
 Answers: 0
 Authority: 0
 Additional: 1
-	Name: , Type: Unknown (41), Class: Unknown (4096), TTL: 0, Data: 00 0A 00 08 01 6B A6 C9 78 AA 51 79 
+	Name: , Type: Unknown (41), Class: Unknown (4096), TTL: 0, Data: 00 0A 00 08 C4 3B AD 2C A5 94 76 9D 
 
---Didn't got an answer, going over authorities
---Trying authority herminius.cs.utexas.edu
---Found additional that has IP for this authority.
---Recursive over:
-ID: 0x3a58, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
-Questions: 1
-	Name: utns.cs.utexas.edu, Type: A, Class: IN
-Answers: 0
-Authority: 0
-Additional: 1
-	Name: , Type: Unknown (41), Class: Unknown (4096), TTL: 0, Data: 00 0A 00 08 01 6B A6 C9 78 AA 51 79 
-
---Got an answer: Name: utns.cs.utexas.edu, Type: CNAME, Class: IN, TTL: 14400, Data: narcissus.cs.utexas.edu
+--Got an answer: Name: www.pinterest.com, Type: CNAME, Class: IN, TTL: 3600, Data: www-pinterest-com.gslb.pinterest.com
 --It was CNAME when I looked for A / AAAA
 --Recursive over:
 ID: 0x0000, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
 Questions: 1
-	Name: narcissus.cs.utexas.edu, Type: A, Class: IN
+	Name: www-pinterest-com.gslb.pinterest.com, Type: A, Class: IN
 Answers: 0
 Authority: 0
 Additional: 0
 
---Got an answer: Name: narcissus.cs.utexas.edu, Type: A, Class: IN, TTL: 14400, Data: 128.83.130.185
---It was what I was looking for
---CNAME solved: Name: narcissus.cs.utexas.edu, Type: A, Class: IN, TTL: 14400, Data: 128.83.130.185
---Sending response packet:
-ID: 0x3a58, Response, Opcode: Standard query, Return Code: No error, Authoritative: true, Truncated: false, Recursion desired: false, Recursion avail: false
+--Didn't got an answer, going over authorities
+--Trying authority a.gtld-servers.net
+--Found additional that has IP for this authority.
+--Recursive over:
+ID: 0x0000, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
 Questions: 1
-	Name: utns.cs.utexas.edu, Type: A, Class: IN
+	Name: www-pinterest-com.gslb.pinterest.com, Type: A, Class: IN
+Answers: 0
+Authority: 0
+Additional: 0
+
+--Didn't got an answer, going over authorities
+--Trying authority ns1.pinterest.com
+--Found additional that has IP for this authority.
+--Recursive over:
+ID: 0x0000, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
+Questions: 1
+	Name: www-pinterest-com.gslb.pinterest.com, Type: A, Class: IN
+Answers: 0
+Authority: 0
+Additional: 0
+
+--Got an answer: Name: www-pinterest-com.gslb.pinterest.com, Type: CNAME, Class: IN, TTL: 300, Data: 2-01-37d2-0018.cdx.cedexis.net
+--It was CNAME when I looked for A / AAAA
+--Recursive over:
+ID: 0x0000, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
+Questions: 1
+	Name: 2-01-37d2-0018.cdx.cedexis.net, Type: A, Class: IN
+Answers: 0
+Authority: 0
+Additional: 0
+
+--Didn't got an answer, going over authorities
+--Trying authority a.gtld-servers.net
+--Found additional that has IP for this authority.
+--Recursive over:
+ID: 0x0000, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
+Questions: 1
+	Name: 2-01-37d2-0018.cdx.cedexis.net, Type: A, Class: IN
+Answers: 0
+Authority: 0
+Additional: 0
+
+--Didn't got an answer, going over authorities
+--Trying authority flipd.cedexis.net
+--Found additional that has IP for this authority.
+--Recursive over:
+ID: 0x0000, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
+Questions: 1
+	Name: 2-01-37d2-0018.cdx.cedexis.net, Type: A, Class: IN
+Answers: 0
+Authority: 0
+Additional: 0
+
+--Got an answer: Name: 2-01-37d2-0018.cdx.cedexis.net, Type: CNAME, Class: IN, TTL: 300, Data: prod.pinterest.global.map.fastly.net
+--It was CNAME when I looked for A / AAAA
+--Recursive over:
+ID: 0x0000, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
+Questions: 1
+	Name: prod.pinterest.global.map.fastly.net, Type: A, Class: IN
+Answers: 0
+Authority: 0
+Additional: 0
+
+--Didn't got an answer, going over authorities
+--Trying authority a.gtld-servers.net
+--Found additional that has IP for this authority.
+--Recursive over:
+ID: 0x0000, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
+Questions: 1
+	Name: prod.pinterest.global.map.fastly.net, Type: A, Class: IN
+Answers: 0
+Authority: 0
+Additional: 0
+
+--Didn't got an answer, going over authorities
+--Trying authority ns1.fastly.net
+--Found additional that has IP for this authority.
+--Recursive over:
+ID: 0x0000, Query, Opcode: Standard query, Return Code: No error, Authoritative: false, Truncated: false, Recursion desired: false, Recursion avail: false
+Questions: 1
+	Name: prod.pinterest.global.map.fastly.net, Type: A, Class: IN
+Answers: 0
+Authority: 0
+Additional: 0
+
+--Got an answer: Name: prod.pinterest.global.map.fastly.net, Type: A, Class: IN, TTL: 30, Data: 146.75.92.84
+--It was what I was looking for
+--CNAME solved: Name: prod.pinterest.global.map.fastly.net, Type: A, Class: IN, TTL: 30, Data: 146.75.92.84
+--CNAME solved: Name: prod.pinterest.global.map.fastly.net, Type: A, Class: IN, TTL: 30, Data: 146.75.92.84
+--CNAME solved: Name: prod.pinterest.global.map.fastly.net, Type: A, Class: IN, TTL: 30, Data: 146.75.92.84
+--Going over EC2
+--Going over EC2
+--Sending response packet:
+ID: 0x5086, Response, Opcode: Standard query, Return Code: No error, Authoritative: true, Truncated: false, Recursion desired: false, Recursion avail: false
+Questions: 1
+	Name: www.pinterest.com, Type: A, Class: IN
 Answers: 3
-	Name: utns.cs.utexas.edu, Type: CNAME, Class: IN, TTL: 14400, Data: narcissus.cs.utexas.edu
-	Name: narcissus.cs.utexas.edu, Type: A, Class: IN, TTL: 14400, Data: 128.83.130.185
-	Name: narcissus.cs.utexas.edu, Type: A, Class: IN, TTL: 14400, Data: 128.83.130.185
+	Name: www.pinterest.com, Type: CNAME, Class: IN, TTL: 3600, Data: www-pinterest-com.gslb.pinterest.com
+	Name: prod.pinterest.global.map.fastly.net, Type: A, Class: IN, TTL: 30, Data: 146.75.92.84
+	Name: prod.pinterest.global.map.fastly.net, Type: Unknown (16), Class: IN, TTL: 0, Data: us-east-1--1840554924
 Authority: 0
 Additional: 1
-	Name: , Type: Unknown (41), Class: Unknown (4096), TTL: 0, Data: 
+	Name: , Type: Unknown (41), Class: Unknown (1232), TTL: 0, Data: 00 0A 00 18 C4 3B AD 2C A5 94 76 9D B5 EC 38 15 63 8A A5 FB 77 1E 89 B6 F0 D8 5A D9 
 
 --Starting to listen for packets
