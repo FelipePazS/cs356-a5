@@ -114,19 +114,21 @@ public class SimpleDNS
 					dnsResponse = nonrecursiveDNS(dns, socket);
 				}
 
-				// for (DNSResourceRecord answer : dnsResponse.getAnswers()) {
-				// 	System.out.println("--Going over EC2");
-				// 	//handle EC2
-				// 	if (DNS.TYPE_A == queryType && DNS.TYPE_CNAME == answer.getType()) {
-				// 		// longest match
-				// 		DNSRdataString ec2String = ec2match(answer);
-				// 		if (ec2String != null){
-				// 			DNSResourceRecord txtRecord = new DNSResourceRecord(answer.getName(), DNS_TXT, ec2String);
-				// 			dnsResponse.addAnswer(txtRecord);
-				// 		}
-				// 	}
-				// }
-				
+				DNSResourceRecord answer_to_add = null;
+				for (DNSResourceRecord answer : dnsResponse.getAnswers()) {
+					System.out.println("--Going over EC2");
+					//handle EC2
+					if (DNS.TYPE_A == answer.getType()) {
+						// longest match
+						DNSRdataString ec2String = ec2match(answer);
+						if (ec2String != null){
+							DNSResourceRecord txtRecord = new DNSResourceRecord(answer.getName(), DNS_TXT, ec2String);
+							answer_to_add = txtRecord;
+						}
+					}
+				}
+				dnsResponse.addAnswer(answer_to_add);
+
 				System.out.println("--Sending response packet:");
 				System.out.println(dnsResponse.toString());
 				DatagramPacket responsePacket = new DatagramPacket(dnsResponse.serialize(), dnsResponse.getLength(), packet.getAddress(), packet.getPort());
@@ -148,6 +150,7 @@ public class SimpleDNS
 	private static List<EC2Entry> getEc2Entries(String ec2CSV) {
 		List<EC2Entry> ec2Entries = new ArrayList<>();
 		try {
+			System.out.println("--Getting EC2 entries");
 			BufferedReader reader = new BufferedReader(new FileReader(ec2CSV));
 			String ec2Line = reader.readLine();
 			while (ec2Line != null) {
@@ -158,6 +161,7 @@ public class SimpleDNS
 				String ec2Mask = ipAndMask[1];
 				EC2Entry ec2Entry = new EC2Entry(ec2Ip, ec2Mask, ec2Loc);
 				ec2Entries.add(ec2Entry);
+				ec2Line = reader.readLine();
 			}
 			reader.close();
 		} catch (Exception e) {
@@ -216,19 +220,19 @@ public class SimpleDNS
 						in which case you will query the received Authoritative Name Server to first get it’s IP, and then continue your initial “recursive process” 
 						and query the initially requested domain using the IP of the received Authoritative Name Server, to finally get the required IP. 
 					*/
-					// question = new DNSQuestion(name, DNS.TYPE_A);
-					// DNS n_dns = new DNS();
-					// n_dns.addQuestion(question);
-					// n_dns.setQuery(true);
-					// DNS n_answer = recursiveDNS(n_dns, rootServerIp, socket);
-					// if (n_answer.getAnswers().size() > 0){
-					// 	got_a_match = true;
-					// 	List<DNSResourceRecord> n_answers = n_answer.getAnswers();
-					// 	DNS responseDNS = recursiveDNS(dns, n_answers.get(0).getData().toString(), socket);
-					// 	if (responseDNS.getAnswers().size() > 0){
-					// 		return responseDNS;
-					// 	}
-					// }
+					question = new DNSQuestion(name, DNS.TYPE_A);
+					DNS n_dns = new DNS();
+					n_dns.addQuestion(question);
+					n_dns.setQuery(true);
+					DNS n_answer = recursiveDNS(n_dns, rootServerIp, socket);
+					if (n_answer.getAnswers().size() > 0){
+						got_a_match = true;
+						List<DNSResourceRecord> n_answers = n_answer.getAnswers();
+						DNS responseDNS = recursiveDNS(dns, n_answers.get(0).getData().toString(), socket);
+						if (responseDNS.getAnswers().size() > 0){
+							return responseDNS;
+						}
+					}
 				}
 			}
 			return null;
@@ -263,28 +267,34 @@ public class SimpleDNS
 	}
 
 	private static DNSRdataString ec2match(DNSResourceRecord answer){
-		int ip = stringToIntIp(answer.getData().toString());
-		int bestMask = 0;
-		EC2Entry bestMatch = null;
-
-		for (EC2Entry ec2Entry : ec2Entries) {
-			// need to convert string ip to int ip to uase mask
-			int entryIp = stringToIntIp(ec2Entry.getIp());
-			int mask = Integer.parseInt(ec2Entry.getMask());
-			int maskedIp = ip & mask;
-			int maskedEntryIp = entryIp & mask;
-			if (maskedIp == maskedEntryIp)
-			{
-				if ((null == bestMatch) || (mask > bestMask))
+		try {
+			int ip = stringToIntIp(answer.getData().toString());
+			int bestMask = 0;
+			EC2Entry bestMatch = null;
+			for (EC2Entry ec2Entry : ec2Entries) {
+				// need to convert string ip to int ip to uase mask
+				int entryIp = stringToIntIp(ec2Entry.getIp());
+				int mask = Integer.parseInt(ec2Entry.getMask());
+				int maskedIp = ip & mask;
+				int maskedEntryIp = entryIp & mask;
+				if (maskedIp == maskedEntryIp)
 				{
-					bestMask = mask;
-					bestMatch = ec2Entry;
+					if ((null == bestMatch) || (mask > bestMask))
+					{
+						bestMask = mask;
+						bestMatch = ec2Entry;
+					}
 				}
-			}
 
+			}
+			DNSRdataString ec2Txt = new DNSRdataString(bestMatch.getLocation() + "-" + ip);
+			return ec2Txt;
+		} catch (Exception e) {
+			System.out.println("In ec2 match: ");
+			System.out.println(e);
+			System.exit(0);
 		}
-		DNSRdataString ec2Txt = new DNSRdataString(bestMatch + "-" + ip);
-		return ec2Txt;
+		return null;
 	}
 
 	private static int stringToIntIp (String stringIp) {
