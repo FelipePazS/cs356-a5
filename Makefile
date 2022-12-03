@@ -5,7 +5,7 @@ JVM = java
 .java.class:
 		$(JC) $(JFLAGS) -cp src/ $*.java
 
-ROOT = <REPLACE WITH ROOT IP>
+ROOT = 198.41.0.4
 CSV = ec2.csv
 CLASSES = \
 	src/edu/ut/cs/sdn/simpledns/packet/DNS.java \
